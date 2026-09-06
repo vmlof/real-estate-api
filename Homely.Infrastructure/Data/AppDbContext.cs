@@ -9,14 +9,14 @@ public class AppDbContext : DbContext
     {
     }
 
+    public DbSet<Property> Properties { get; set; } = null!;
     public DbSet<Lease> Leases { get; set; } = null!;
     public DbSet<Location> Locations { get; set; } = null!;
-    public DbSet<Manager> Managers { get; set; } = null!;
     public DbSet<Payment> Payments { get; set; } = null!;
-    public DbSet<Property> Properties { get; set; } = null!;
     public DbSet<RentalApplication> Applications { get; set; } = null!;
-    public DbSet<Tenant> Tenants { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
+    public DbSet<Manager> Managers { get; set; } = null!;
+    public DbSet<Tenant> Tenants { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
