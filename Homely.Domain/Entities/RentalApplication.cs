@@ -1,4 +1,6 @@
-﻿namespace Homely.Domain.Entities;
+﻿using Homely.Domain.Enums;
+
+namespace Homely.Domain.Entities;
 
 public class RentalApplication
 {
@@ -22,7 +24,7 @@ public class RentalApplication
 
     public int Id { get; private set; }
     public DateTime ApplicationDate { get; private set; }
-    public int Status { get; private set; } // ApplicationStatus
+    public ApplicationStatus Status { get; private set; }
     public int PropertyId { get; private set; }
     public Property Property { get; private set; } = null!;
     public int TenantId { get; private set; }

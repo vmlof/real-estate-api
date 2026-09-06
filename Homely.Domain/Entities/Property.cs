@@ -1,4 +1,6 @@
-﻿namespace Homely.Domain.Entities;
+﻿using Homely.Domain.Enums;
+
+namespace Homely.Domain.Entities;
 
 public class Property
 {
@@ -16,7 +18,7 @@ public class Property
     public int Beds { get; private set; }
     public float Baths { get; private set; }
     public int SquareFeet { get; private set; }
-    public int PropertyType { get; private set; } // PropertyType
+    public PropertyType PropertyType { get; private set; } 
     public DateTime PostedDate { get; private set; }
     public float AverageRating { get; private set; }
     public int? NumberOfReviews { get; private set; }
