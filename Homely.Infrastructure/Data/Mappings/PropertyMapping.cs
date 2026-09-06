@@ -18,64 +18,73 @@ public class PropertyMapping : IEntityTypeConfiguration<Property>
 
         builder.Property(e => e.Name)
             .HasColumnName("name")
+            .HasMaxLength(150)
             .IsRequired();
 
         builder.Property(e => e.Description)
             .HasColumnName("description")
+            .HasMaxLength(2000)
             .IsRequired();
 
         builder.Property(e => e.PricePerMonth)
             .HasColumnName("price_per_month")
+            .HasColumnType("decimal(18,2)")
             .IsRequired();
-        
+
         builder.Property(e => e.SecurityDeposit)
             .HasColumnName("security_deposit")
+            .HasColumnType("decimal(18,2)")
             .IsRequired();
-        
+
         builder.Property(e => e.ApplicationFee)
             .HasColumnName("application_fee")
+            .HasColumnType("decimal(18,2)")
             .IsRequired();
-        
+
         builder.Property(e => e.PhotoUrls)
             .HasColumnName("photo_urls")
+            .HasMaxLength(4000)
+            .IsUnicode(false)
             .IsRequired();
-        
+
         builder.Property(e => e.Amenities)
             .HasColumnName("amenities")
+            .HasMaxLength(1000)
             .IsRequired();
-        
+
         builder.Property(e => e.Highlights)
             .HasColumnName("highlights")
+            .HasMaxLength(1000)
             .IsRequired();
-        
+
         builder.Property(e => e.IsPetsAllowed)
             .HasColumnName("is_pets_allowed")
             .IsRequired();
-        
+
         builder.Property(e => e.IsParkingIncluded)
             .HasColumnName("is_parking_included")
             .IsRequired();
-        
+
         builder.Property(e => e.Beds)
             .HasColumnName("beds")
             .IsRequired();
-        
+
         builder.Property(e => e.Baths)
             .HasColumnName("baths")
             .IsRequired();
-        
+
         builder.Property(e => e.SquareFeet)
             .HasColumnName("square_feet")
             .IsRequired();
-        
+
         builder.Property(e => e.PropertyType)
             .HasColumnName("property_type")
             .IsRequired();
-        
+
         builder.Property(e => e.PostedDate)
             .HasColumnName("posted_date")
             .IsRequired();
-        
+
         builder.Property(e => e.AverageRating)
             .HasColumnName("average_rating")
             .IsRequired();
@@ -83,13 +92,29 @@ public class PropertyMapping : IEntityTypeConfiguration<Property>
 
         builder.Property(e => e.NumberOfReviews)
             .HasColumnName("number_of_reviews");
-        
+
         builder.Property(e => e.LocationId)
             .HasColumnName("location_id")
             .IsRequired();
-        
-        builder.Property(e => e.ManagerCognitoId)
-            .HasColumnName("manager_cognito_id")
+
+        builder.Property(e => e.ManagerId)
+            .HasColumnName("manager_id")
             .IsRequired();
+
+        builder.HasOne(p => p.Manager)
+            .WithMany(m => m.Properties)
+            .HasForeignKey(p => p.ManagerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(p => p.Location)
+            .WithMany()
+            .HasForeignKey(p => p.LocationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(p => p.ManagerId)
+            .HasDatabaseName("ix_properties_manager_id");
+
+        builder.HasIndex(p => p.LocationId)
+            .HasDatabaseName("ix_properties_location_id");
     }
 }

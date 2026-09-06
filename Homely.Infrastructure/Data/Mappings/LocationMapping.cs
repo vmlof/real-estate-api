@@ -17,32 +17,43 @@ public class LocationMapping : IEntityTypeConfiguration<Location>
 
         builder.Property(e => e.Address)
             .HasColumnName("address")
+            .HasMaxLength(255)
             .IsRequired();
 
         builder.Property(e => e.City)
             .HasColumnName("city")
+            .HasMaxLength(100)
             .IsRequired();
 
         builder.Property(e => e.State)
             .HasColumnName("state")
+            .HasMaxLength(100)
             .IsRequired();
 
         builder.Property(e => e.Country)
             .HasColumnName("country")
+            .HasMaxLength(100)
             .IsRequired();
 
         builder.Property(e => e.PostalCode)
             .HasColumnName("postal_code")
+            .HasMaxLength(20)
+            .IsUnicode(false)
             .IsRequired();
 
         builder.ComplexProperty(e => e.Coordinates, cb =>
         {
             cb.Property(e => e.Latitude)
-                .HasColumnName("latitude");
+                .HasColumnName("latitude")
+                .IsRequired();
 
 
             cb.Property(e => e.Longitude)
-                .HasColumnName("longitude");
+                .HasColumnName("longitude")
+                .IsRequired();
         });
+
+        builder.Metadata.FindNavigation(nameof(Location.Properties))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

@@ -25,18 +25,39 @@ public class LeaseMapping : IEntityTypeConfiguration<Lease>
 
         builder.Property(e => e.Rent)
             .HasColumnName("rent")
+            .HasColumnType("decimal(18,2)")
             .IsRequired();
 
         builder.Property(e => e.Deposit)
             .HasColumnName("deposit")
+            .HasColumnType("decimal(18,2)")
             .IsRequired();
 
-        builder.Property(e => e.PropertyId) // FK
+        builder.Property(e => e.PropertyId)
             .HasColumnName("property_id")
             .IsRequired();
 
-        builder.Property(e => e.TenantCognitoId)
-            .HasColumnName("tenant_cognito_id")
+        builder.Property(e => e.TenantId)
+            .HasColumnName("tenant_id")
             .IsRequired();
+
+        builder.HasOne(l => l.Property)
+            .WithMany()
+            .HasForeignKey(l => l.PropertyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(l => l.Tenant)
+            .WithMany(t => t.Leases)
+            .HasForeignKey(l => l.TenantId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Metadata.FindNavigation(nameof(Lease.Payments))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasIndex(l => l.PropertyId)
+            .HasDatabaseName("ix_leases_property_id");
+
+        builder.HasIndex(l => l.TenantId)
+            .HasDatabaseName("ix_leases_tenant_id");
     }
 }

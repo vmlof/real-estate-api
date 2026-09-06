@@ -21,5 +21,7 @@ public class Property
     public float AverageRating { get; private set; }
     public int? NumberOfReviews { get; private set; }
     public int LocationId { get; private set; } // FK
-    public string ManagerCognitoId { get; private set; } = string.Empty; // FK
+    public Location Location { get; private set; } = null!;
+    public int ManagerId { get; private set; } // FK
+    public Manager Manager { get; private set; } = null!;
 }

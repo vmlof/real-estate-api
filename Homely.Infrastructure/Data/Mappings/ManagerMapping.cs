@@ -15,19 +15,31 @@ public class ManagerMapping : IEntityTypeConfiguration<Manager>
         builder.Property(e => e.Id)
             .HasColumnName("id");
 
-        builder.Property(e => e.CognitoId)
-            .HasColumnName("cognito_id");
+        builder.Property(e => e.UserId)
+            .HasColumnName("user_id")
+            .IsRequired();
 
         builder.Property(e => e.Name)
             .HasColumnName("name")
-            .IsRequired();
-
-        builder.Property(e => e.Email)
-            .HasColumnName("email")
+            .HasMaxLength(150)
             .IsRequired();
 
         builder.Property(e => e.PhoneNumber)
             .HasColumnName("phone_number")
+            .HasMaxLength(20)
+            .IsUnicode(false)
             .IsRequired();
+
+        builder.HasOne(e => e.User)
+            .WithOne()
+            .HasForeignKey<Manager>(e => e.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Metadata.FindNavigation(nameof(Manager.Properties))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasIndex(m => m.UserId)
+            .IsUnique()
+            .HasDatabaseName("ix_managers_user_id");
     }
 }
