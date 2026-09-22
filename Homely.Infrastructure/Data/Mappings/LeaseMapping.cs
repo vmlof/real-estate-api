@@ -41,6 +41,7 @@ public class LeaseMapping : IEntityTypeConfiguration<Lease>
             .HasColumnName("tenant_id")
             .IsRequired();
 
+
         builder.HasOne(l => l.Property)
             .WithMany()
             .HasForeignKey(l => l.PropertyId)
@@ -51,8 +52,10 @@ public class LeaseMapping : IEntityTypeConfiguration<Lease>
             .HasForeignKey(l => l.TenantId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Metadata.FindNavigation(nameof(Lease.Payments))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
+        builder.HasMany(l => l.Payments)
+            .WithOne()
+            .HasForeignKey("LeaseId")
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(l => l.PropertyId)
             .HasDatabaseName("ix_leases_property_id");

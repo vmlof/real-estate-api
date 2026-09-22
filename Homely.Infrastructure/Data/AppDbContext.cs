@@ -1,4 +1,5 @@
 ﻿using Homely.Domain.Entities;
+using Homely.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Homely.Infrastructure.Data;
@@ -20,6 +21,9 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasPostgresEnum<Amenity>();
+        modelBuilder.HasPostgresEnum<HighLight>();
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DependencyInjection).Assembly);
     }
 }

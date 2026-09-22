@@ -6,6 +6,7 @@ public class Location
 {
     protected Location()
     {
+        Coordinates = null!;
     }
 
     public Location(string address, string city, string state, string country, string postalCode, double latitude,
@@ -28,8 +29,8 @@ public class Location
     public string PostalCode { get; private set; } = string.Empty;
     public Coordinate Coordinates { get; private set; }
 
-    private readonly List<Property> _properties = new();
-    public IReadOnlyCollection<Property> Properties => _properties.AsReadOnly();
+    public int PropertyId { get; set; }
+    public Property Property { get; set; }
 
     public void SetCoordinates(double latitude, double longitude)
     {

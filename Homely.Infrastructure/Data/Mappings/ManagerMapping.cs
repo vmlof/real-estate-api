@@ -27,19 +27,11 @@ public class ManagerMapping : IEntityTypeConfiguration<Manager>
         builder.Property(e => e.PhoneNumber)
             .HasColumnName("phone_number")
             .HasMaxLength(20)
-            .IsUnicode(false)
             .IsRequired();
 
         builder.HasOne(e => e.User)
             .WithOne()
             .HasForeignKey<Manager>(e => e.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Metadata.FindNavigation(nameof(Manager.Properties))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
-
-        builder.HasIndex(m => m.UserId)
-            .IsUnique()
-            .HasDatabaseName("ix_managers_user_id");
     }
 }

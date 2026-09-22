@@ -38,7 +38,6 @@ public class LocationMapping : IEntityTypeConfiguration<Location>
         builder.Property(e => e.PostalCode)
             .HasColumnName("postal_code")
             .HasMaxLength(20)
-            .IsUnicode(false)
             .IsRequired();
 
         builder.ComplexProperty(e => e.Coordinates, cb =>
@@ -52,8 +51,5 @@ public class LocationMapping : IEntityTypeConfiguration<Location>
                 .HasColumnName("longitude")
                 .IsRequired();
         });
-
-        builder.Metadata.FindNavigation(nameof(Location.Properties))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

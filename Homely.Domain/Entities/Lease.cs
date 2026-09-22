@@ -25,13 +25,7 @@ public class Lease
     public Property Property { get; private set; } = null!;
     public int TenantId { get; private set; }
     public Tenant Tenant { get; private set; } = null!;
-    public RentalApplication? Application { get; private set; }
 
     private readonly List<Payment> _payments = new();
     public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
-
-    public void AddPayment(Payment payment)
-    {
-        _payments.Add(payment);
-    }
 }

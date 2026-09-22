@@ -27,7 +27,6 @@ public class PaymentMapping : IEntityTypeConfiguration<Payment>
             .HasColumnName("due_date")
             .IsRequired();
 
-
         builder.Property(e => e.PaymentDate)
             .HasColumnName("payment_date");
 

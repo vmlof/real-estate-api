@@ -43,18 +43,23 @@ public class PropertyMapping : IEntityTypeConfiguration<Property>
 
         builder.Property(e => e.PhotoUrls)
             .HasColumnName("photo_urls")
-            .HasMaxLength(4000)
-            .IsUnicode(false)
+            .HasField("_photoUrls")
+            .HasColumnType("text[]")
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
             .IsRequired();
 
         builder.Property(e => e.Amenities)
             .HasColumnName("amenities")
-            .HasMaxLength(1000)
+            .HasField("_amenities")
+            .HasColumnType("amenity[]")
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
             .IsRequired();
 
-        builder.Property(e => e.Highlights)
+        builder.Property(e => e.HighLights)
             .HasColumnName("highlights")
-            .HasMaxLength(1000)
+            .HasField("_highlights")
+            .HasColumnType("highlight[]")
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
             .IsRequired();
 
         builder.Property(e => e.IsPetsAllowed)
@@ -107,8 +112,8 @@ public class PropertyMapping : IEntityTypeConfiguration<Property>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(p => p.Location)
-            .WithMany()
-            .HasForeignKey(p => p.LocationId)
+            .WithOne()
+            .HasForeignKey<Property>(p => p.LocationId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(p => p.ManagerId)

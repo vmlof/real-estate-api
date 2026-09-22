@@ -4,10 +4,9 @@ namespace Homely.Domain.Entities;
 
 public class User
 {
-    public int Id { get; private set; }
-    public string Email { get; private set; } = string.Empty;
-    public string PasswordHash { get; private set; } = string.Empty;
-    public Role Role { get; private set; }
+    protected User()
+    {
+    }
 
     public User(string email, string passwordHash, Role role)
     {
@@ -15,4 +14,9 @@ public class User
         PasswordHash = passwordHash;
         Role = role;
     }
+
+    public int Id { get; private set; }
+    public string Email { get; private set; } = string.Empty;
+    public string PasswordHash { get; private set; } = string.Empty;
+    public Role Role { get; private set; }
 }

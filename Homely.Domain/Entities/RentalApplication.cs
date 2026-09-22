@@ -19,7 +19,7 @@ public class RentalApplication
         Message = message;
 
         ApplicationDate = DateTime.UtcNow;
-        // Status = ApplicationStatus.Pending; 
+        Status = ApplicationStatus.Pending;
     }
 
     public int Id { get; private set; }

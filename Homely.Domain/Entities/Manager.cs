@@ -21,9 +21,4 @@ public class Manager
 
     private readonly List<Property> _properties = new();
     public IReadOnlyCollection<Property> Properties => _properties.AsReadOnly();
-
-    public void AddProperty(Property property)
-    {
-        _properties.Add(property);
-    }
 }

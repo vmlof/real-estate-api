@@ -1,4 +1,6 @@
-﻿namespace Homely.Domain.Entities;
+﻿using Homely.Domain.Enums;
+
+namespace Homely.Domain.Entities;
 
 public class Payment
 {
@@ -7,13 +9,14 @@ public class Payment
     }
 
 
-    public Payment(int leaseId, decimal amountDue, DateTime dueDate, int paymentStatus)
+    public Payment(decimal amountDue, decimal amountPaid, DateTime dueDate, DateTime? paymentDate,
+        PaymentStatus paymentStatus, int leaseId)
     {
-        LeaseId = leaseId;
         AmountDue = amountDue;
+        AmountPaid = amountPaid;
         DueDate = dueDate;
         PaymentStatus = paymentStatus;
-        AmountPaid = 0;
+        LeaseId = leaseId;
     }
 
     public int Id { get; private set; }
@@ -21,13 +24,7 @@ public class Payment
     public decimal AmountPaid { get; private set; }
     public DateTime DueDate { get; private set; }
     public DateTime? PaymentDate { get; private set; }
-    public int PaymentStatus { get; private set; } // PaymentStatus
+    public PaymentStatus PaymentStatus { get; private set; }
     public int LeaseId { get; private set; }
     public Lease Lease { get; private set; } = null!;
-
-    public void ProcessPayment(decimal amountPaid, DateTime paymentDate)
-    {
-        AmountPaid = amountPaid;
-        PaymentDate = paymentDate;
-    }
 }

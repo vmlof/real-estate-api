@@ -66,8 +66,11 @@ public class RentalApplicationMapping : IEntityTypeConfiguration<RentalApplicati
             .HasForeignKey<RentalApplication>(a => a.LeaseId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasIndex(a => a.PropertyId).HasDatabaseName("ix_applications_property_id");
-        builder.HasIndex(a => a.TenantId).HasDatabaseName("ix_applications_tenant_id");
+        builder.HasIndex(a => a.PropertyId)
+            .HasDatabaseName("ix_applications_property_id");
+
+        builder.HasIndex(a => a.TenantId)
+            .HasDatabaseName("ix_applications_tenant_id");
 
         builder.HasIndex(a => a.LeaseId)
             .IsUnique()

@@ -28,27 +28,11 @@ public class TenantMapping : IEntityTypeConfiguration<Tenant>
         builder.Property(e => e.PhoneNumber)
             .HasColumnName("phone_number")
             .HasMaxLength(20)
-            .IsUnicode(false)
             .IsRequired();
 
         builder.HasOne(t => t.User)
             .WithOne()
             .HasForeignKey<Tenant>(t => t.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasMany(t => t.FavoritedProperties)
-            .WithMany() // Depois, se precisar, você pode mapear na Property um IReadOnlyCollection<Tenant> FavoritedBy
-            .UsingEntity("tenant_favorite_properties");
-
-        builder.Metadata.FindNavigation(nameof(Tenant.Applications))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
-        builder.Metadata.FindNavigation(nameof(Tenant.Leases))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
-        builder.Metadata.FindNavigation(nameof(Tenant.FavoritedProperties))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
-
-        builder.HasIndex(t => t.UserId)
-            .IsUnique()
-            .HasDatabaseName("ix_tenants_user_id");
     }
 }

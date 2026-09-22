@@ -18,13 +18,11 @@ public class UserMapping : IEntityTypeConfiguration<User>
         builder.Property(e => e.Email)
             .HasColumnName("email")
             .HasMaxLength(100)
-            .IsUnicode(false)
             .IsRequired();
 
         builder.Property(e => e.PasswordHash)
             .HasColumnName("password_hash")
-            .HasMaxLength(100)
-            .IsUnicode(false)
+            .HasMaxLength(255)
             .IsRequired();
 
         builder.Property(e => e.Role)
