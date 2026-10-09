@@ -27,9 +27,7 @@ public class Property
         int squareFeet,
         PropertyType propertyType,
         DateTime postedDate,
-        float averageRating,
-        int? numberOfReviews,
-        int locationId,
+        Location location,
         int managerId)
     {
         Name = name;
@@ -47,9 +45,9 @@ public class Property
         SquareFeet = squareFeet;
         PropertyType = propertyType;
         PostedDate = postedDate;
-        AverageRating = averageRating;
-        NumberOfReviews = numberOfReviews;
-        LocationId = locationId;
+        AverageRating = 0;
+        NumberOfReviews = 0;
+        Location = location;
         ManagerId = managerId;
     }
 
@@ -69,7 +67,7 @@ public class Property
     public int SquareFeet { get; private set; }
     public PropertyType PropertyType { get; private set; }
     public DateTime PostedDate { get; private set; }
-    public float AverageRating { get; private set; }
+    public float? AverageRating { get; private set; }
     public int? NumberOfReviews { get; private set; }
     public int LocationId { get; private set; }
     public Location Location { get; private set; } = null!;

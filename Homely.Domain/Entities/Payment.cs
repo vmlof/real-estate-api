@@ -17,6 +17,7 @@ public class Payment
         DueDate = dueDate;
         PaymentStatus = paymentStatus;
         LeaseId = leaseId;
+        PaymentDate = paymentDate;
     }
 
     public int Id { get; private set; }

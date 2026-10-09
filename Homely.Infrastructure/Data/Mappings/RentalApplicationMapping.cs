@@ -57,7 +57,7 @@ public class RentalApplicationMapping : IEntityTypeConfiguration<RentalApplicati
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(a => a.Tenant)
-            .WithMany()
+            .WithMany(t => t.Applications)
             .HasForeignKey(a => a.TenantId)
             .OnDelete(DeleteBehavior.Restrict);
 

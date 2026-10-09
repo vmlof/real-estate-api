@@ -52,11 +52,6 @@ public class LeaseMapping : IEntityTypeConfiguration<Lease>
             .HasForeignKey(l => l.TenantId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(l => l.Payments)
-            .WithOne()
-            .HasForeignKey("LeaseId")
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasIndex(l => l.PropertyId)
             .HasDatabaseName("ix_leases_property_id");
 

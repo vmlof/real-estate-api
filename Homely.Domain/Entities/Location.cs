@@ -29,8 +29,7 @@ public class Location
     public string PostalCode { get; private set; } = string.Empty;
     public Coordinate Coordinates { get; private set; }
 
-    public int PropertyId { get; set; }
-    public Property Property { get; set; }
+    public Property? Property { get; set; }
 
     public void SetCoordinates(double latitude, double longitude)
     {

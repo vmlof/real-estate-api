@@ -91,9 +91,7 @@ public class PropertyMapping : IEntityTypeConfiguration<Property>
             .IsRequired();
 
         builder.Property(e => e.AverageRating)
-            .HasColumnName("average_rating")
-            .IsRequired();
-
+            .HasColumnName("average_rating");
 
         builder.Property(e => e.NumberOfReviews)
             .HasColumnName("number_of_reviews");
@@ -112,14 +110,16 @@ public class PropertyMapping : IEntityTypeConfiguration<Property>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(p => p.Location)
-            .WithOne()
+            .WithOne(l => l.Property)
             .HasForeignKey<Property>(p => p.LocationId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(p => p.ManagerId)
+            .IsUnique()
             .HasDatabaseName("ix_properties_manager_id");
 
         builder.HasIndex(p => p.LocationId)
+            .IsUnique()
             .HasDatabaseName("ix_properties_location_id");
     }
 }
