@@ -35,13 +35,11 @@ public class RentalApplicationMapping : IEntityTypeConfiguration<RentalApplicati
         builder.Property(e => e.Email)
             .HasColumnName("email")
             .HasMaxLength(100)
-            .IsUnicode(false)
             .IsRequired();
 
         builder.Property(e => e.PhoneNumber)
             .HasColumnName("phone_number")
             .HasMaxLength(20)
-            .IsUnicode(false)
             .IsRequired();
 
         builder.Property(e => e.Message)

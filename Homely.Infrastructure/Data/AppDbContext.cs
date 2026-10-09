@@ -22,7 +22,7 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresEnum<Amenity>();
-        modelBuilder.HasPostgresEnum<HighLight>();
+        modelBuilder.HasPostgresEnum<HighLight>(name: "highlight");
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DependencyInjection).Assembly);
     }
