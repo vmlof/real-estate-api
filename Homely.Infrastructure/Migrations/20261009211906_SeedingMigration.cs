@@ -1,4 +1,5 @@
 ﻿using Homely.Domain.Enums;
+using Homely.Infrastructure.Authentication;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -8,8 +9,9 @@ namespace Homely.Infrastructure.Migrations
     /// <inheritdoc />
     public partial class SeedingMigration : Migration
     {
-        // TODO: gerar UMA vez com o hasher real da aplicação (senha de desenvolvimento) e colar aqui.
-        private const string PasswordHash = "PASSWORD_HASH";
+        private const string DevPassword = "change123";
+        private static readonly string PasswordHash =
+            new PasswordHasher().Hash(DevPassword);
         
         private const int RoleManager = (int)Role.Manager;
         private const int RoleTenant = (int)Role.Tenant;
@@ -32,34 +34,33 @@ namespace Homely.Infrastructure.Migrations
         protected override void Up(MigrationBuilder mb)
         {
             mb.Sql($"""
-                INSERT INTO users (id, email, password_hash, role) VALUES
-                (1,  'john.smith@example.com',      '{PasswordHash}', {RoleManager}),
-                (2,  'sarah.johnson@example.com',   '{PasswordHash}', {RoleManager}),
-                (3,  'michael.brown@example.com',   '{PasswordHash}', {RoleManager}),
-                (4,  'emily.davis@example.com',     '{PasswordHash}', {RoleManager}),
-                (5,  'robert.wilson@example.com',   '{PasswordHash}', {RoleManager}),
-                (6,  'lisa.thompson@example.com',   '{PasswordHash}', {RoleManager}),
-                (7,  'daniel.martinez@example.com', '{PasswordHash}', {RoleManager}),
-                (8,  'olivia.garcia@example.com',   '{PasswordHash}', {RoleManager}),
-                (9,  'ethan.rodriguez@example.com', '{PasswordHash}', {RoleManager}),
-                (10, 'sophia.kim@example.com',      '{PasswordHash}', {RoleManager}),
-                (11, 'carol.white@example.com',     '{PasswordHash}', {RoleTenant}),
-                (12, 'bob.green@example.com',       '{PasswordHash}', {RoleTenant}),
-                (13, 'alice.brown@example.com',     '{PasswordHash}', {RoleTenant}),
-                (14, 'david.lee@example.com',       '{PasswordHash}', {RoleTenant}),
-                (15, 'emma.taylor@example.com',     '{PasswordHash}', {RoleTenant}),
-                (16, 'frank.wilson@example.com',    '{PasswordHash}', {RoleTenant}),
-                (17, 'grace.miller@example.com',    '{PasswordHash}', {RoleTenant}),
-                (18, 'henry.wilson@example.com',    '{PasswordHash}', {RoleTenant}),
-                (19, 'isabella.garcia@example.com', '{PasswordHash}', {RoleTenant}),
-                (20, 'jack.thompson@example.com',   '{PasswordHash}', {RoleTenant}),
-                (21, 'karen.martinez@example.com',  '{PasswordHash}', {RoleTenant}),
-                (22, 'liam.johnson@example.com',    '{PasswordHash}', {RoleTenant}),
-                (23, 'mia.rodriguez@example.com',   '{PasswordHash}', {RoleTenant}),
-                (24, 'noah.kim@example.com',        '{PasswordHash}', {RoleTenant}),
-                (25, 'olivia.chen@example.com',     '{PasswordHash}', {RoleTenant});
-                """);
-
+                    INSERT INTO users (id, email, password_hash, role) VALUES
+                    (1,  'john.smith@example.com',      '{PasswordHash}', {RoleManager}),
+                    (2,  'sarah.johnson@example.com',   '{PasswordHash}', {RoleManager}),
+                    (3,  'michael.brown@example.com',   '{PasswordHash}', {RoleManager}),
+                    (4,  'emily.davis@example.com',     '{PasswordHash}', {RoleManager}),
+                    (5,  'robert.wilson@example.com',   '{PasswordHash}', {RoleManager}),
+                    (6,  'lisa.thompson@example.com',   '{PasswordHash}', {RoleManager}),
+                    (7,  'daniel.martinez@example.com', '{PasswordHash}', {RoleManager}),
+                    (8,  'olivia.garcia@example.com',   '{PasswordHash}', {RoleManager}),
+                    (9,  'ethan.rodriguez@example.com', '{PasswordHash}', {RoleManager}),
+                    (10, 'sophia.kim@example.com',      '{PasswordHash}', {RoleManager}),
+                    (11, 'carol.white@example.com',     '{PasswordHash}', {RoleTenant}),
+                    (12, 'bob.green@example.com',       '{PasswordHash}', {RoleTenant}),
+                    (13, 'alice.brown@example.com',     '{PasswordHash}', {RoleTenant}),
+                    (14, 'david.lee@example.com',       '{PasswordHash}', {RoleTenant}),
+                    (15, 'emma.taylor@example.com',     '{PasswordHash}', {RoleTenant}),
+                    (16, 'frank.wilson@example.com',    '{PasswordHash}', {RoleTenant}),
+                    (17, 'grace.miller@example.com',    '{PasswordHash}', {RoleTenant}),
+                    (18, 'henry.wilson@example.com',    '{PasswordHash}', {RoleTenant}),
+                    (19, 'isabella.garcia@example.com', '{PasswordHash}', {RoleTenant}),
+                    (20, 'jack.thompson@example.com',   '{PasswordHash}', {RoleTenant}),
+                    (21, 'karen.martinez@example.com',  '{PasswordHash}', {RoleTenant}),
+                    (22, 'liam.johnson@example.com',    '{PasswordHash}', {RoleTenant}),
+                    (23, 'mia.rodriguez@example.com',   '{PasswordHash}', {RoleTenant}),
+                    (24, 'noah.kim@example.com',        '{PasswordHash}', {RoleTenant}),
+                    (25, 'olivia.chen@example.com',     '{PasswordHash}', {RoleTenant});
+                    """);
             // managers
             mb.Sql("""
                 INSERT INTO managers (id, user_id, name, phone_number) VALUES
@@ -75,7 +76,7 @@ namespace Homely.Infrastructure.Migrations
                 (10, 10, 'Sophia Kim',      '+1 (555) 456-7890');
                 """);
 
-            // tenants (user_id = id + 10)
+            // tenants
             mb.Sql("""
                 INSERT INTO tenants (id, user_id, name, phone_number) VALUES
                 (1,  11, 'Carol White',     '+1 (555) 555-6666'),
@@ -95,7 +96,7 @@ namespace Homely.Infrastructure.Migrations
                 (15, 25, 'Olivia Chen',     '+1 (555) 159-7531');
                 """);
 
-            // locations (WKT é POINT(lon lat); aqui já separado em latitude/longitude)
+            // locations
             mb.Sql("""
                 INSERT INTO locations (id, address, city, state, country, postal_code, latitude, longitude) VALUES
                 (1,  '123 Colorado Blvd',   'Pasadena',      'CA', 'United States', '91105', 34.147785,  -118.144516),
@@ -110,9 +111,7 @@ namespace Homely.Infrastructure.Migrations
                 (10, '789 Rodeo Dr',        'Beverly Hills', 'CA', 'United States', '90210', 34.073620,  -118.400356);
                 """);
 
-            // ───────────── properties ─────────────
-            // Os rótulos de amenity/highlight seguem o snake_case padrão do Npgsql.
-            // CONFIRA contra o CREATE TYPE (ou "Npgsql:Enum:amenity"/"highlight") da migration inicial.
+            // Properties 
             mb.Sql($"""
                 INSERT INTO properties
                     (id, name, description, price_per_month, security_deposit, application_fee,
@@ -244,9 +243,6 @@ namespace Homely.Infrastructure.Migrations
                 """);
 
             // payments
-            // Ajustes em relação ao JSON original:
-            //  • ids 2, 5 e 11 (Pending): payment_date = NULL (antes tinham data de pagamento);
-            //  • id 15: amount_paid = 2500 (antes 0.0 com status Paid).
             mb.Sql($"""
                 INSERT INTO payments
                     (id, amount_due, amount_paid, due_date, payment_date, payment_status, lease_id)
@@ -283,7 +279,7 @@ namespace Homely.Infrastructure.Migrations
                 (15, 4), (15, 7), (15, 9);
                 """);
 
-            // sequences: ids explícitos não avançam o identity do PostgreSQL 
+            // sequences
             mb.Sql("""
                 SELECT setval(pg_get_serial_sequence('users',        'id'), (SELECT MAX(id) FROM users));
                 SELECT setval(pg_get_serial_sequence('managers',     'id'), (SELECT MAX(id) FROM managers));
