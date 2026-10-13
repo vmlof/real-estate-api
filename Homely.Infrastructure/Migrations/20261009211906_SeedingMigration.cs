@@ -31,7 +31,6 @@ namespace Homely.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder mb)
         {
-            // users (1-10 managers, 11-25 tenants)
             mb.Sql($"""
                 INSERT INTO users (id, email, password_hash, role) VALUES
                 (1,  'john.smith@example.com',      '{PasswordHash}', {RoleManager}),
