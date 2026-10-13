@@ -15,7 +15,7 @@ public sealed class PasswordHasher : IPasswordHasher
         byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
         byte[] hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, Algorithm, HashSize);
 
-        return Convert.ToHexString(hash);
+        return $"{Convert.ToHexString(hash)}-{Convert.ToHexString(salt)}";
     }
 
     public bool Verify(string password, string passwordHash)
