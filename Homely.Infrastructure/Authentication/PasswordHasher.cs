@@ -1,5 +1,5 @@
 ﻿using System.Security.Cryptography;
-using Homely.Application.Interfaces;
+using Homely.Application.Authentication;
 
 namespace Homely.Infrastructure.Authentication;
 

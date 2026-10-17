@@ -1,4 +1,4 @@
-﻿namespace Homely.Application.Interfaces;
+﻿namespace Homely.Application.Authentication;
 
 public interface IPasswordHasher
 {

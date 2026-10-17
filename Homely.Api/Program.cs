@@ -1,4 +1,5 @@
 using Homely.Api.Exceptions;
+using Homely.Application;
 using Homely.Infrastructure;
 using Homely.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddInfrastructure();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ExceptionHandler>();
 
@@ -45,6 +47,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("frontend");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
