@@ -1,3 +1,3 @@
-﻿namespace Homely.Application.UseCases;
+﻿namespace Homely.Application.UseCases.Login;
 
 public record LoginResponse(string AccessToken, string RefreshToken);

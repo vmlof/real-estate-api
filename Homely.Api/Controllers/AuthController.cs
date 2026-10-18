@@ -1,8 +1,7 @@
-using Homely.Application.UseCases;
+using Homely.Api.Extensions;
+using Homely.Application.UseCases.Login;
 using Homely.Application.UseCases.RefreshToken;
-using Homely.Domain.Entities;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Homely.Api.Controllers;
@@ -22,7 +21,15 @@ public class AuthController : ControllerBase
     public async Task<ActionResult> Login(LoginRequest request)
     {
         var result = await _mediator.Send(request);
-        return Ok(result);
+
+        return result.Match<LoginResponse, ActionResult>(
+            onSuccess: response => Ok(response),
+            onFailure: error => Unauthorized(new
+            {
+                error.Code,
+                error.Description
+            })
+        );
     }
 
     [HttpPost("refresh")]
