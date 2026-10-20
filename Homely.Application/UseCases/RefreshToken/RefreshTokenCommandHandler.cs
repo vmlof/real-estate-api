@@ -1,45 +1,69 @@
-﻿using Homely.Application.Authentication;
+﻿using System.Security.Claims;
+using Homely.Application.Authentication;
 using Homely.Application.UseCases.Login;
 using Homely.Domain.Abstractions;
+using Homely.Domain.Common;
+using Homely.Domain.Entities;
+using Homely.Domain.Errors;
 using Homely.Domain.Repositories;
 using MediatR;
 
 namespace Homely.Application.UseCases.RefreshToken;
 
-public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, LoginResponse>
+public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<LoginResponse>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ITokenProvider _tokenProvider;
     private readonly IUserRepository _userRepository;
+    private readonly ITokenProvider _tokenProvider;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
+    // private readonly IUnitOfWork _unitOfWork;
 
-    public RefreshTokenCommandHandler(IUnitOfWork unitOfWork, ITokenProvider tokenProvider,
-        IUserRepository userRepository, IRefreshTokenRepository refreshTokenRepository)
+    public RefreshTokenCommandHandler(
+        IUserRepository userRepository,
+        ITokenProvider tokenProvider,
+        IRefreshTokenRepository refreshTokenRepository)
     {
-        _unitOfWork = unitOfWork;
-        _tokenProvider = tokenProvider;
         _userRepository = userRepository;
+        _tokenProvider = tokenProvider;
         _refreshTokenRepository = refreshTokenRepository;
+        // _unitOfWork = unitOfWork;
     }
 
-    public async Task<LoginResponse> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
+    public async Task<Result<LoginResponse>> Handle(RefreshTokenCommand request,
+        CancellationToken cancellationToken)
     {
-        var storedToken = await _refreshTokenRepository.GetRefreshToken(request.RefreshToken);
+        var hash = RefreshTokenHasher.Hash(request.RefreshToken);
+        var stored = await _refreshTokenRepository.GetByHashAsync(
+            hash, cancellationToken);
 
-        if (storedToken is null)
+        var now = DateTime.UtcNow;
+        if (stored is null || stored.IsRevoked || stored.ExpiresAt <= now)
+            return Result<LoginResponse>.Failure(RefreshTokenErrors.Invalid);
+
+        var user = await _userRepository.GetByIdAsync(
+            stored.UserId, cancellationToken);
+
+        if (user is null)
+            return Result<LoginResponse>.Failure(RefreshTokenErrors.Invalid);
+
+        var accessToken = _tokenProvider.GenerateAccessToken(user);
+        var rawReplacement = _tokenProvider.GenerateRefreshToken();
+
+        var replacement = new RefreshTokens()
         {
-            return null;
-        }
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            TokenHash = RefreshTokenHasher.Hash(rawReplacement),
+            CreatedAt = now,
+            // ExpiresAt = now.AddDays(_jwt.RefreshTokenDays)
+        };
 
-        storedToken.IsRevoked = true;
+        var rotated = await _refreshTokenRepository.RotateAsync(
+            stored.Id, now, replacement, cancellationToken);
 
-        var user = await _userRepository.GetByIdAsync(storedToken.UserId);
+        if (!rotated)
+            return Result<LoginResponse>.Failure(RefreshTokenErrors.Invalid);
 
-        var (accessToken, newRefreshToken) = _tokenProvider.GenerateTokens(user!);
-
-        await _unitOfWork.CommitAsync();
-
-
-        return new LoginResponse(accessToken, newRefreshToken);
+        return Result<LoginResponse>.Success(
+            new LoginResponse(accessToken, rawReplacement));
     }
 }

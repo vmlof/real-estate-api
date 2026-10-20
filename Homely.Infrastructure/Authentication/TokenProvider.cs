@@ -1,76 +1,42 @@
 ﻿using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using Homely.Application.Authentication;
 using Homely.Domain.Entities;
-using Homely.Infrastructure.Data;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Homely.Infrastructure.Authentication;
 
-public sealed class TokenProvider : ITokenProvider
+public sealed class TokenProvider(JwtOptions jwt) : ITokenProvider
 {
-    private readonly IConfiguration _configuration;
-    private readonly AppDbContext _context;
-
-    public TokenProvider(IConfiguration configuration, AppDbContext context)
+    public string GenerateAccessToken(User user)
     {
-        _configuration = configuration;
-        _context = context;
-    }
+        var now = DateTime.UtcNow;
+        var key = new SymmetricSecurityKey(Convert.FromBase64String(jwt.SecretBase64));
 
-    public (string AccessToken, string RefreshToken) GenerateTokens(User user)
-    {
-        var accessToken = GenerateAccessToken(user);
-
-        var refreshToken = new RefreshToken
+        var claims = new[]
         {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
-            Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow
+            new Claim("sub", user.Id.ToString()),
+            new Claim("email", user.Email),
+            new Claim("role", user.Role.ToString()),
+            new Claim("jti", Guid.NewGuid().ToString("N"))
         };
 
-        _context.RefreshTokens.Add(refreshToken);
-
-        return (accessToken, refreshToken.Token);
-    }
-
-    private string GenerateAccessToken(User user)
-    {
-        var claims = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new(JwtRegisteredClaimNames.Email, user.Email),
-            new("permission", "orders:read"),
-            new("permission", "orders:write")
-        };
-
-        // Add role claims
-        claims.Add(new Claim(ClaimTypes.Role, user.Role.ToString()));
-
-        // foreach (var role in user.Roles)
-        // {
-        //     claims.Add(new(ClaimTypes.Role, role.Name));
-        // }
-
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
-
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var tokenDescriptor = new SecurityTokenDescriptor
+        var descriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(30),
-            SigningCredentials = credentials,
-            Issuer = _configuration["Jwt:Issuer"],
-            Audience = _configuration["Jwt:Audience"]
+            IssuedAt = now,
+            NotBefore = now,
+            Expires = now.AddMinutes(jwt.AccessTokenMinutes),
+            Issuer = jwt.Issuer,
+            Audience = jwt.Audience,
+            SigningCredentials =
+                new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
         };
 
-        return new JsonWebTokenHandler().CreateToken(tokenDescriptor);
+        return new JsonWebTokenHandler().CreateToken(descriptor);
     }
+
+    public string GenerateRefreshToken()
+        => Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
 }

@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Homely.Infrastructure.Data.Mappings;
 
-public class RefreshTokenMapping : IEntityTypeConfiguration<RefreshToken>
+public class RefreshTokenMapping : IEntityTypeConfiguration<RefreshTokens>
 {
-    public void Configure(EntityTypeBuilder<RefreshToken> builder)
+    public void Configure(EntityTypeBuilder<RefreshTokens> builder)
     {
         builder.ToTable("refresh_tokens");
 
@@ -15,10 +15,12 @@ public class RefreshTokenMapping : IEntityTypeConfiguration<RefreshToken>
         builder.Property(r => r.UserId)
             .IsRequired();
 
-        builder.Property(r => r.Token)
+        builder.Property(r => r.TokenHash)
             .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(64);
 
+        builder.Property(r => r.CreatedAt)
+            .IsRequired();
 
         builder.Property(r => r.ExpiresAt)
             .IsRequired();
@@ -26,13 +28,13 @@ public class RefreshTokenMapping : IEntityTypeConfiguration<RefreshToken>
         builder.Property(r => r.IsRevoked)
             .IsRequired();
 
-        builder.Property(r => r.CreatedAt)
-            .IsRequired();
 
-
-        builder.HasIndex(r => r.Token)
-            .IsUnique();
-
+        builder.HasIndex(r => r.TokenHash).IsUnique();
         builder.HasIndex(r => r.UserId);
+
+        builder.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -19,6 +19,7 @@ public class ExceptionHandler : IExceptionHandler
     {
         var (status, title) = exception switch
         {
+            UnauthorizedAccessException => (401, "Unauthorized"),
             KeyNotFoundException => (404, "Resource not found"),
             InvalidOperationException => (409, "Operation conflict"),
             ArgumentException => (400, "Invalid request"),
@@ -44,7 +45,7 @@ public class ExceptionHandler : IExceptionHandler
         {
             Status = status,
             Title = title,
-            Detail = exception.Message,
+            Detail = exception.Message, // ajustar detalhes para 401 
             Instance = httpContext.Request.Path
         };
 

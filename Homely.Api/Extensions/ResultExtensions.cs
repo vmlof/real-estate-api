@@ -12,3 +12,12 @@ public static class ResultExtensions
         return result.IsSuccess ? onSuccess(result.Value) : onFailure(result.Error);
     }
 }
+
+// return result.Match<LoginResponse, ActionResult>(
+//     onSuccess: response => Ok(response),
+//     onFailure: error => Unauthorized(new
+//     {
+//         error.Code,
+//         error.Description
+//     })
+// );

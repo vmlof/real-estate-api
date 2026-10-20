@@ -322,7 +322,7 @@ namespace Homely.Infrastructure.Migrations
                     b.ToTable("properties", (string)null);
                 });
 
-            modelBuilder.Entity("Homely.Domain.Entities.RefreshToken", b =>
+            modelBuilder.Entity("Homely.Domain.Entities.RefreshTokens", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -337,17 +337,17 @@ namespace Homely.Infrastructure.Migrations
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Token")
+                    b.Property<string>("TokenHash")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Token")
+                    b.HasIndex("TokenHash")
                         .IsUnique();
 
                     b.HasIndex("UserId");
@@ -566,6 +566,15 @@ namespace Homely.Infrastructure.Migrations
                     b.Navigation("Location");
 
                     b.Navigation("Manager");
+                });
+
+            modelBuilder.Entity("Homely.Domain.Entities.RefreshTokens", b =>
+                {
+                    b.HasOne("Homely.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Homely.Domain.Entities.RentalApplication", b =>

@@ -1,6 +1,6 @@
-﻿namespace Homely.Application.Authentication;
+﻿namespace Homely.Application.Interfaces;
 
-public interface IUserContext
+public interface ICurrentUser
 {
     int UserId { get; }
 
