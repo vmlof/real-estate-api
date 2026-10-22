@@ -21,7 +21,7 @@ O projeto segue a Clean Architecture. As dependências apontam **sempre de fora 
 
 - O projeto utiliza a classe `Result` (`Homely.Domain/Common/Result.cs`) para retornar sucesso ou falha.
 - Utilize as classes de erro específicas (ex: `Homely.Domain/Errors/LoginErrors.cs`).
-- A `Api` utiliza `ResultExtensions.cs` para traduzir o `Result` em códigos HTTP apropriados (ex: `Result.IsSuccess` -> 200 OK, `Result.IsFailure` -> 400 Bad Request, 404 Not Found, etc).
+- A `Api` traduz o `Result` em códigos HTTP apropriados. `ResultExtensions.cs` oferece o helper `Match`; o `AuthController` faz essa tradução explicitamente. O helper não mapeia automaticamente tipos de erro para status HTTP.
 
 ### 2. CQRS Simplificado
 
@@ -39,22 +39,43 @@ Como o frontend é em Next.js, as seguintes regras de API devem ser estritamente
 
 - **Contratos (JSON):** As respostas devem ser previsíveis. Não altere DTOs (Request/Response) sem verificar o impacto no contrato do frontend.
 - **HTTP Status Codes:** Use semanticamente (200 para sucesso, 201 para criação, 401 para não autenticado, 403 para sem permissão, 404 para não encontrado, 409 para conflitos).
+- **Ambiente atual:** O frontend de desenvolvimento usa `http://localhost:3000`. Preserve essa origem; a configuração de produção será analisada futuramente.
+- **Integração de autenticação:** Chamadas do navegador à API devem incluir credenciais para enviar cookies. Validar o fluxo no navegador, incluindo a combinação de HTTP/HTTPS e `SameSite`; sucesso no Postman não comprova essa integração. O frontend deve descartar o access token no logout e coordenar renovações simultâneas, inclusive entre abas.
 
-## ⚠️ Problemas Conhecidos e Limitações (Para Revisão Futura)
+## Autenticação: Estado Atual e Garantias
 
-Os pontos abaixo são deficiências arquiteturais ou de segurança já mapeadas na implementação atual e que exigem cautela ou refatoração estruturada.
+### 1. Contratos HTTP e Tokens
 
-### 1. Fluxo de Autenticação e Renovação de Tokens (Crítico)
+- `POST /api/auth/login` recebe JSON com `email` e `password`. Retorna `200` com `{ accessToken }` e define o cookie `refreshToken`; credenciais inválidas retornam `401`.
+- `POST /api/auth/refresh-token` não exige corpo. Lê o refresh token do cookie, realiza a rotação e retorna `200` com `{ accessToken }` e um novo cookie. Token ausente, expirado, revogado ou inválido retorna `401`.
+- `POST /api/auth/logout` lê o cookie, revoga a sessão associada e seus refresh tokens, apaga o cookie e retorna `204`. É idempotente, inclusive sem cookie ou com token desconhecido; falhas de persistência não devem ser ocultadas.
+- O refresh token é aleatório e somente seu hash SHA-256 é persistido. Nunca o exponha no JSON público ou em logs. `LoginResponse` contém o token bruto apenas para comunicação interna entre Application e API.
+- O cookie usa `HttpOnly`, `Secure`, `SameSite=Strict` e `Path=/api/auth`. A exclusão deve preservar os atributos de identificação do cookie.
+- A configuração atual define access tokens de 15 minutos e refresh tokens de 7 dias. Cada rotação preenche `ExpiresAt` com uma nova validade configurada. Logout não invalida imediatamente um JWT já emitido; ele continua válido até expirar.
+- Uma falha de refresh não apaga o cookie: uma resposta atrasada não deve remover o cookie emitido por outra requisição bem-sucedida.
 
-- **Status Atual:** A aplicação emite Access Tokens (JWT) e Refresh Tokens (com hashing no banco, via `TokenHashMigration`). Existe um caso de uso `LoginResponse.cs`.
-- **Problema Potencial (Risco de Segurança):** Se o Refresh Token estiver sendo retornado no corpo da resposta JSON (`LoginResponse`) para o Next.js, ele será vulnerável a ataques de XSS (Cross-Site Scripting), pois o frontend terá que armazená-lo no `localStorage` ou na memória.
-- **Direção de Melhoria (Ação Futura):** O contrato da API no `AuthController` deve ser alterado para retornar o Access Token no JSON, mas o **Refresh Token deve ser retornado como um Cookie HTTP-Only e Secure**. O endpoint de `/refresh-token` deve ler o token diretamente do cookie, isolando-o do acesso via JavaScript no frontend.
-- **Ordem:** Agentes de IA que modificarem a autenticação devem propor e implementar essa migração para `HttpOnly Cookies` se solicitado, ajustando os contratos adequadamente.
+### 2. Sessões e Concorrência
 
-### 2. Tratamento Global de Exceções
+- Cada login cria uma `RefreshSession`; tokens sucessivos preservam o mesmo `SessionId`. Logout encerra somente essa sessão, preservando outros logins do usuário.
+- `RotateAsync` e `RevokeAsync` atualizam primeiro a mesma linha da sessão dentro de transações PostgreSQL. Preserve essa ordem de bloqueio: sessão antes dos tokens.
+- A atualização da sessão em `RotateAsync`, mesmo mantendo `IsRevoked=false`, adquire o bloqueio necessário. Não a remova como se fosse uma escrita redundante.
+- Se o refresh concluir primeiro, o logout revoga também o sucessor. Se o logout concluir primeiro, a rotação falha. Revogação do token anterior e inserção do substituto devem continuar atômicas.
+- A migration `20261022135506_RefreshSessions` cria as sessões e associa cada token preexistente a uma sessão própria antes de criar a chave estrangeira. Ela não reconstrói vínculos históricos entre tokens antigos. Sua aplicação no ambiente de desenvolvimento foi confirmada pelo usuário.
 
-- **Status Atual:** Existe um `ExceptionHandler.cs` na API.
-- **Verificação Necessária:** Garantir que este handler esteja mascarando corretamente erros internos (500) para não vazar StackTraces para o Next.js em ambiente de produção (retornando o padrão genérico RFC 7807 _Problem Details_).
+### 3. Validação Realizada
+
+- Build da solução e verificação de correspondência entre modelo EF e migration passaram.
+- `scripts/Test-AuthConcurrency.ps1` executou chamadas HTTP contra PostgreSQL: refresh primeiro retornou `200`, logout `204` e uso posterior do substituto `401`; logout primeiro retornou `204` e refresh `401`.
+- O script requer API em execução, dados de seed, PowerShell e `curl.exe`. Os parâmetros `LogoutDelayMilliseconds` e `RefreshDelayMilliseconds` permitem favorecer cada ordem. Ele cria sessões para o usuário de desenvolvimento do seed e não é um teste de carga nem uma prova exaustiva de todas as intercalações.
+- Respeite o rate limit de autenticação (10 requisições por minuto por IP na configuração atual). `429` invalida o resultado do cenário; não o interprete como revogação bem-sucedida.
+- O usuário confirmou sucesso dos testes de login, refresh e logout no Postman. A integração com o Next.js no navegador ainda precisa ser validada.
+
+## Problemas Conhecidos e Limitações
+
+- **Responsabilidade transacional:** A regra de uso de `IUnitOfWork` permanece. Login a segue, mas `RotateAsync` e `RevokeAsync` ainda gerenciam transações diretamente no repositório. Essa divergência precisa de refatoração, preservando os bloqueios e a atomicidade descritos acima. `ExecuteUpdateAsync` persiste imediatamente; adicionar apenas `CommitAsync` não resolve a divergência.
+- **Reutilização de tokens:** Tokens já consumidos são rejeitados, mas a reutilização não revoga automaticamente toda a sessão. Essa política ainda precisa ser definida considerando concorrência legítima entre chamadas e abas.
+- **Cookies e CSRF:** Validar o comportamento real dos cookies no navegador e definir proteção contra CSRF antes de flexibilizar `SameSite`. CORS não substitui essa proteção. A configuração de produção permanece para revisão futura.
+- **Exceções:** `ExceptionHandler` retorna mensagem genérica em `ProblemDetails` para erros `500` e registra detalhes nos logs. Outros status ainda usam `exception.Message`; revisar a exposição de detalhes e o mapeamento genérico de exceções conforme necessário.
 
 ## Regras Operacionais para Agentes de IA
 
