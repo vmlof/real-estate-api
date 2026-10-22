@@ -41,19 +41,16 @@ public class AuthController : ControllerBase
 
     [EnableRateLimiting("auth")]
     [HttpPost("refresh-token")]
-    public async Task<ActionResult> RefreshToken([FromBody] RefreshTokenCommand request,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> RefreshToken(CancellationToken cancellationToken)
     {
         var rawToken = Request.Cookies["refreshToken"];
         if (string.IsNullOrWhiteSpace(rawToken))
             return Unauthorized();
 
-        var result = await _mediator.Send(
-            new RefreshTokenCommand(rawToken), cancellationToken);
+        var result = await _mediator.Send(new RefreshTokenCommand(rawToken), cancellationToken);
 
         if (result.IsFailure)
         {
-            DeleteRefreshTokenCookie();
             return Unauthorized(new
             {
                 result.Error.Code,

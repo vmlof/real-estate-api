@@ -15,17 +15,18 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
     private readonly IUserRepository _userRepository;
     private readonly ITokenProvider _tokenProvider;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
-    // private readonly IUnitOfWork _unitOfWork;
+    private readonly JwtOptions _jwt;
 
     public RefreshTokenCommandHandler(
         IUserRepository userRepository,
         ITokenProvider tokenProvider,
-        IRefreshTokenRepository refreshTokenRepository)
+        IRefreshTokenRepository refreshTokenRepository,
+        JwtOptions jwt)
     {
         _userRepository = userRepository;
         _tokenProvider = tokenProvider;
         _refreshTokenRepository = refreshTokenRepository;
-        // _unitOfWork = unitOfWork;
+        _jwt = jwt;
     }
 
     public async Task<Result<LoginResponse>> Handle(RefreshTokenCommand request,
@@ -51,10 +52,11 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         var replacement = new RefreshTokens()
         {
             Id = Guid.NewGuid(),
+            SessionId = stored.SessionId,
             UserId = user.Id,
             TokenHash = RefreshTokenHasher.Hash(rawReplacement),
             CreatedAt = now,
-            // ExpiresAt = now.AddDays(_jwt.RefreshTokenDays)
+            ExpiresAt = now.AddDays(_jwt.RefreshTokenDays)
         };
 
         var rotated = await _refreshTokenRepository.RotateAsync(

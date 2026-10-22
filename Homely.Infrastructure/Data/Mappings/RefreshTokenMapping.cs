@@ -15,6 +15,8 @@ public class RefreshTokenMapping : IEntityTypeConfiguration<RefreshTokens>
         builder.Property(r => r.UserId)
             .IsRequired();
 
+        builder.Property(r => r.SessionId).IsRequired();
+
         builder.Property(r => r.TokenHash)
             .IsRequired()
             .HasMaxLength(64);
@@ -31,6 +33,10 @@ public class RefreshTokenMapping : IEntityTypeConfiguration<RefreshTokens>
 
         builder.HasIndex(r => r.TokenHash).IsUnique();
         builder.HasIndex(r => r.UserId);
+        builder.HasIndex(r => r.SessionId);
+
+        builder.HasOne<RefreshSession>().WithMany().HasForeignKey(r => r.SessionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne<User>()
             .WithMany()

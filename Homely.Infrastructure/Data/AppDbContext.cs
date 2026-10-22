@@ -19,6 +19,7 @@ public class AppDbContext : DbContext
     public DbSet<Manager> Managers { get; set; } = null!;
     public DbSet<Tenant> Tenants { get; set; } = null!;
     public DbSet<RefreshTokens> RefreshTokens { get; set; } = null!;
+    public DbSet<RefreshSession> RefreshSessions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

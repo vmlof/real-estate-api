@@ -322,6 +322,25 @@ namespace Homely.Infrastructure.Migrations
                     b.ToTable("properties", (string)null);
                 });
 
+            modelBuilder.Entity("Homely.Domain.Entities.RefreshSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("refresh_sessions", (string)null);
+                });
+
             modelBuilder.Entity("Homely.Domain.Entities.RefreshTokens", b =>
                 {
                     b.Property<Guid>("Id")
@@ -337,6 +356,9 @@ namespace Homely.Infrastructure.Migrations
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -346,6 +368,8 @@ namespace Homely.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
 
                     b.HasIndex("TokenHash")
                         .IsUnique();
@@ -568,8 +592,23 @@ namespace Homely.Infrastructure.Migrations
                     b.Navigation("Manager");
                 });
 
+            modelBuilder.Entity("Homely.Domain.Entities.RefreshSession", b =>
+                {
+                    b.HasOne("Homely.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Homely.Domain.Entities.RefreshTokens", b =>
                 {
+                    b.HasOne("Homely.Domain.Entities.RefreshSession", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Homely.Domain.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")

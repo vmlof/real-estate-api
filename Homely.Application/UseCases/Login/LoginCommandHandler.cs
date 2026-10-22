@@ -35,6 +35,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginRequest, Result<L
 
     public async Task<Result<LoginResponse>> Handle(LoginRequest request, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            return Result<LoginResponse>.Failure(LoginErrors.InvalidCredentials);
+
         var email = request.Email.Trim().ToLowerInvariant();
         var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
 
@@ -45,11 +48,13 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginRequest, Result<L
 
         var now = DateTime.UtcNow;
         var rawRefreshToken = _tokenProvider.GenerateRefreshToken();
+        var sessionId = Guid.NewGuid();
 
         await _refreshTokenRepository.AddAsync(
             new RefreshTokens()
             {
                 Id = Guid.NewGuid(),
+                SessionId = sessionId,
                 UserId = user.Id,
                 TokenHash = RefreshTokenHasher.Hash(rawRefreshToken),
                 CreatedAt = now,

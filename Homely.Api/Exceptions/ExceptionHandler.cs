@@ -45,7 +45,7 @@ public class ExceptionHandler : IExceptionHandler
         {
             Status = status,
             Title = title,
-            Detail = exception.Message, // ajustar detalhes para 401 
+            Detail = status == 500 ? "An unexpected error occurred." : exception.Message,
             Instance = httpContext.Request.Path
         };
 

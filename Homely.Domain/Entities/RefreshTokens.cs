@@ -3,6 +3,7 @@
 public sealed class RefreshTokens
 {
     public Guid Id { get; set; }
+    public Guid SessionId { get; set; }
     public int UserId { get; set; }
     public string TokenHash { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
